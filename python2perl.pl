@@ -2,6 +2,9 @@
 # http://www.cse.unsw.edu.au/~cs2041/assignments/python2perl
 # Charbel Antouny (z3462611) 2014
 
+# Need to read from command line, else from STDIN if no files specified
+# See earlier lab for syntax
+
 while ($line = <>) {
     if ($line =~ /^#!/ && $. == 1) {
         # translate #! line 
