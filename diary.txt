@@ -1,0 +1,9 @@
+COMP2041 ASSIGNMENT 1: DIARY
+============================
+CHARBEL ANTOUNY (z3462611)
+============================
+
+Date: 23/09/2014
+Start: 4:00pm       End: 5:30pm
+Activity: Coding
+Comments: Created git repository and started assignment
