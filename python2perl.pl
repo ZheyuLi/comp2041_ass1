@@ -28,13 +28,13 @@ foreach my $file (@ARGV) {
             print "print \"$1\\n\";\n";
         } elsif ($line =~ m/^\s*print\s*([a-zA-Z][a-zA-Z0-9_]*)\s*$/) {
             # print var instead of string
-
+            print "print \"\$$1\\n\";", "\n";
             #check if var exists in hash then print
         } elsif ($line =~ m/^\s*([a-zA-Z][a-zA-Z0-9_]*)\s*=\s*([0-9]*)/) {
             # captures numeric variables
-            printf "%s = $2;\n", perlVar($1);
-
-            # add var to hash
+            my $var = perlVar($1);
+            print "$var = $2;\n";
+            $vars{"$var"} = "$2";
         } else {
             # Lines we can't translate are turned into comments
             print "#$line\n";

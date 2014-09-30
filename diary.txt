@@ -7,10 +7,16 @@ CHARBEL ANTOUNY (z3462611)
 Date: 23/09/2014
 Start: 4:00pm       End: 5:30pm
 Activity: Coding
-Comments: Created git repository and started assignment
+Comments: Created git repository and started assignment.
 
 
 Date: 24/09/2014
 Start: 11:00am      End: 1:00pm
 Activity: Coding
-Comments: Added code to store and print numerical variables
+Comments: Added code to store and print numerical variables.
+
+
+Date: 30/09/2014
+Start: 10:00pm      End: 11:30pm
+Activity: Coding
+Comments: Continued working on subset 1, specifically the plus '+' operator.
