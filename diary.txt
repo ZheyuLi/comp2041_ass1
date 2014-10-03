@@ -20,3 +20,21 @@ Date: 30/09/2014
 Start: 10:00pm      End: 11:30pm
 Activity: Coding
 Comments: Continued working on subset 1, specifically the plus '+' operator.
+
+
+Date: 01/10/2014
+Start: 6:00pm      End: 11:00pm
+Activity: Coding
+Comments: Completed subset 1, though will require further testing.
+
+
+Date: 02/10/2014
+Start: 5:00pm      End: 8:00pm 
+Activity: Debugging
+Comments: Fixed some bugs in subset 1, began work on subset 2.
+
+
+Date: 03/10/2014
+Start: 4:00pm      End: 10:00pm
+Activity: Coding
+Comments: Completed subset 2 and wrote a simple test file.
