@@ -23,6 +23,8 @@ foreach my $file (@ARGV) {
         if ($curIndent > $indent) {
             $indent = $curIndent;
             for (1..$curIndent) { print " "; }
+        } elsif ($curIndent == $indent) {
+            for (1..$curIndent) { print " "; }
         } else {
             while ($indent > $curIndent) {
                 $indent -= $indentSize;
@@ -33,6 +35,7 @@ foreach my $file (@ARGV) {
                     print "}\n";
                 }
             }
+            for (1..$indent) { print " "; }
         }
         
         if ($line =~ m/^#!/ && $. == 1) {
@@ -46,6 +49,14 @@ foreach my $file (@ARGV) {
         } elsif ($line =~ m/\s*print\s*"(.*)"\s*$/) {
             # print a string
             print "print \"$1\\n\";\n";
+
+        } elsif ($line =~ m/\s*print\s*$/) {
+            # print new line only
+            print "print \"\\n\";", "\n";
+
+        } elsif ($line =~ m/\s*($regexVar)\s*=\s*\[(.*?)\]/) {
+            # list assignment
+            print "\@$1 = ($2);", "\n";
 
         } elsif ($line =~ m/\s*print\s*($regexVar)/) {
             # print variable or arithmetic equation involving multiple variables
@@ -66,12 +77,16 @@ foreach my $file (@ARGV) {
                 # captures arithmetic equations
                 $value = "$&";
                 $value =~ s/($regexVar)/\$$1/g;
+            } elsif ($line =~ m/\s*sys\.stdin\.readline/) {
+                # captures int casting and reading from STDIN
+                $value = "<STDIN>";
             }
             print "$var ${operator}= ${value};", "\n";
 
-        } elsif ($line =~ m/\s*(if|while)\s*(.*?):\s*(.*?)$/) {
+        } elsif ($line =~ m/\s*(elif|if|while)\s*(.*?):\s*(.*?)$/) {
             # captures if/while statements
             my $keyword = "$1";
+            if ($keyword eq "elif") { $keyword = "elsif"; }
             my $cond = "$2";
             my $expr;
             if ($3) {
@@ -102,14 +117,17 @@ foreach my $file (@ARGV) {
 
         } elsif ($line =~ m/\s*for\s+(.*?)\s+in\s+(.*?):/) {
             # captures single and multi-line for statements
-            # NEEDS TO BE MODIFIED TO HANDLE SINGLE LINE
             my $var = "\$$1";
             my $seq = "$2";
-            if ($seq =~ m/range\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)/) {
-                my $end = $2 - 1;
-                print "for $var (${1}..${end}) {\n";
+            if ($seq =~ m/range\s*\((.*?),(.*?)\)/) {
+                my $start = "$1";
+                $start =~ s/($regexVar)/\$$1/g;
+                my $end = "$2";
+                $end =~ s/($regexVar)/\$$1/g;
+                $end .= "-1";
+                print "for $var (${start}..${end}) {";
             } elsif ($seq =~ m/("|')(.*?)("|')/) {
-                print "for $var (split //, $2) {\n";
+                print "for $var (split //, $2) {";
             } elsif ($seq =~ m/($regexVar)/) {
                 my $list = "\@$1";
                 if ($seq =~ m/\[\s*(\d|)\s*:\s*(\d|)\s*\]/) {
@@ -117,11 +135,29 @@ foreach my $file (@ARGV) {
                     my $end = $2;
                     if (!$start) { $start = 0; }
                     if (!$end) { $end = 0; }
-                    print 'for $var in (@a['."${start}..${end}]) {", "\n";
+                    print 'for $var in (@a['."${start}..${end}]) {";
                 } else {
-                    print 'for '."$var ($list) {\n";
+                    print 'for '."$var ($list) {";
                 }
             }
+            if ($line =~ m/:\s*(.+?)$/) {
+                my $expr = "$1";
+                my @exprWords = split / /, "$expr";
+                foreach my $word (@exprWords) {
+                    if ($word =~ m/$regexVar/ and !defined $keywords{$word}) {
+                        $word = "\$$word";
+                    }
+                }
+                $expr = join " ", @exprWords;
+                $expr .= ";";
+                print " $expr }", "\n";
+            } else {
+                print "\n";
+            }
+
+        } elsif ($line =~ m/\s*sys\.stdout\.write\((.*?)\)/) {
+            # captures sys.stdout.write() commands
+            print "print ${1};", "\n";
 
         } elsif ($line =~ m/\s*(break|continue)/) {
             # captures break and continue statements
@@ -131,9 +167,13 @@ foreach my $file (@ARGV) {
                 print "next;", "\n";
             }
 
+        } elsif ($line =~ m/\s*else\s*:/) {
+            # captures else lines
+            print "else {\n";
+
         } else {
             # Lines that can't be translated are turned into comments
-            print "#$line\n";
+            print "#$line";
         }
     }
 }
