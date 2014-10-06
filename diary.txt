@@ -38,3 +38,8 @@ Date: 03/10/2014
 Start: 4:00pm      End: 10:00pm
 Activity: Coding
 Comments: Completed subset 2 and wrote a simple test file.
+
+05/10/2014
+Start: 9:30pm      End: 11:30pm
+Activity: Coding
+Comments: Began working on subset 3, and implemented parts of detecting indentation.

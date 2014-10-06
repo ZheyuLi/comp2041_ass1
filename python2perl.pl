@@ -8,10 +8,33 @@ if (!@ARGV) {
 }
 
 $regexVar = "[a-zA-Z][a-zA-Z0-9_]*";
-my %keywords = ("print" =>1, "if" =>1, "while" =>1, "and" =>1, "or" =>1, "not" =>1);
+my $indent = 0;
+my $curIndent = 0;
+my $indentSize = 0;
+my %keywords = ("print" =>1, "if" =>1, "while" =>1, "for" =>1, "and" =>1, "or" =>1, "not" =>1);
+
 foreach my $file (@ARGV) {
     open F, "<$file";
     while ($line = <F>) {
+        # this block deals with printing indentation
+        $line =~ m/^\s*/;
+        $curIndent = length($&) if ($line !~ /^\s*$/);
+        $indentSize = $curIndent if ($curIndent != 0 and $indentSize == 0);
+        if ($curIndent > $indent) {
+            $indent = $curIndent;
+            for (1..$curIndent) { print " "; }
+        } else {
+            while ($indent > $curIndent) {
+                $indent -= $indentSize;
+                if ($indent == 0) { 
+                    print "}\n";
+                } else {
+                    for (1..$indent) { print " "; }
+                    print "}\n";
+                }
+            }
+        }
+        
         if ($line =~ m/^#!/ && $. == 1) {
             # translate #! line 
             print "#!/usr/bin/perl -w\n";
@@ -20,11 +43,11 @@ foreach my $file (@ARGV) {
             # blank & comment lines are passed unchanged
             print $line;
 
-        } elsif ($line =~ m/^\s*print\s*"(.*)"\s*$/) {
+        } elsif ($line =~ m/\s*print\s*"(.*)"\s*$/) {
             # print a string
             print "print \"$1\\n\";\n";
 
-        } elsif ($line =~ m/^\s*print\s*($regexVar)/) {
+        } elsif ($line =~ m/\s*print\s*($regexVar)/) {
             # print variable or arithmetic equation involving multiple variables
             my $var = "\"\$$1\"";
             if ($line =~ m/(${regexVar}\s*(\+|-|\*|\/|%|\*\*)\s*${regexVar})+/) {
@@ -33,7 +56,7 @@ foreach my $file (@ARGV) {
             }
             print "print $var, \"\\n\";", "\n";
             
-        } elsif ($line =~ m/^\s*($regexVar)\s*(\+|-)?=\s*([0-9]+|$regexVar)/) {
+        } elsif ($line =~ m/\s*($regexVar)\s*(\+|-)?=\s*([0-9]+|$regexVar)/) {
             # captures numeric and variable assignment
             # also checks for += or -=
             my $var = "\$$1";
@@ -77,17 +100,50 @@ foreach my $file (@ARGV) {
             }        
             ($expr ne "") ? (print "$keyword ($cond) { $expr }", "\n") : (print "$keyword ($cond) {\n");
 
-        } elsif ($line =~ m/(break|continue)/) {
+        } elsif ($line =~ m/\s*for\s+(.*?)\s+in\s+(.*?):/) {
+            # captures single and multi-line for statements
+            # NEEDS TO BE MODIFIED TO HANDLE SINGLE LINE
+            my $var = "\$$1";
+            my $seq = "$2";
+            if ($seq =~ m/range\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)/) {
+                my $end = $2 - 1;
+                print "for $var (${1}..${end}) {\n";
+            } elsif ($seq =~ m/("|')(.*?)("|')/) {
+                print "for $var (split //, $2) {\n";
+            } elsif ($seq =~ m/($regexVar)/) {
+                my $list = "\@$1";
+                if ($seq =~ m/\[\s*(\d|)\s*:\s*(\d|)\s*\]/) {
+                    my $start = $1;
+                    my $end = $2;
+                    if (!$start) { $start = 0; }
+                    if (!$end) { $end = 0; }
+                    print 'for $var in (@a['."${start}..${end}]) {", "\n";
+                } else {
+                    print 'for '."$var ($list) {\n";
+                }
+            }
+
+        } elsif ($line =~ m/\s*(break|continue)/) {
             # captures break and continue statements
             if ("$1" eq "break") {
                 print "last;", "\n";
             } else {
                 print "next;", "\n";
             }
-            
+
         } else {
             # Lines that can't be translated are turned into comments
             print "#$line\n";
         }
+    }
+}
+# this block deals with any remaining } that must be printed
+while ($curIndent > 0) {
+    $curIndent -= $indentSize;
+    if ($curIndent == 0) { 
+        print "}\n";
+    } else {
+        for (1..$curIndent) { print " "; }
+        print "}\n";
     }
 }
