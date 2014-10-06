@@ -43,3 +43,8 @@ Comments: Completed subset 2 and wrote a simple test file.
 Start: 9:30pm      End: 11:30pm
 Activity: Coding
 Comments: Began working on subset 3, and implemented parts of detecting indentation.
+
+06/10/2014
+Start: 11:00am      End: 11:00pm
+Activity: Coding, debugging
+Comments: Completed subset 3, wrote test00-09 and demo00-09, and fixed any remaining bugs.
